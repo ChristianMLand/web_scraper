@@ -43,7 +43,7 @@ def parse_table_into_dict(table):
                     row_data.append(td_str)
     return table_dict
 
-# def parse_table_into_dict_ideal(table):
+# def parse_table_into_dict(table):
 #     # If website HTML was structured more consistently,
 #     # the above function could be simplified to this
 #     rows = table.find_all("tr")
@@ -63,7 +63,7 @@ def parse_table_into_dict(table):
 #                 row_data.append(td_str)
 #     return table_dict
 
-def format_table(table_dict):
+def format_table_dict(table_dict):
     new_table = {}
     line_types = None
     for i, line in enumerate(table_dict):
@@ -71,10 +71,7 @@ def format_table(table_dict):
         if i == 0:
             line_types = row
         else:
-            new_table[line] = {
-                "picks" : [],
-                "drops" : []
-            }
+            new_table[line] = { "picks" : [], "drops" : [] }
             for j, val in enumerate(row):
                 if val == "YES":
                     new_table[line]["drops" if j % 2 == 0 else "picks"].append(line_types[j].split(" ")[0])
@@ -93,13 +90,10 @@ def main():
     file = open(file='terminal_table.html', mode='r')
     soup = BeautifulSoup(markup=file, features='html.parser')
     table_dict = parse_table_into_dict(soup.find_all("table")[1])
-    formatted_table = format_table(table_dict)
+    formatted_table = format_table_dict(table_dict)
 
     workbook = xlsxwriter.Workbook("sample_output.xlsx")
     worksheet = workbook.add_worksheet("picks and drops")
-
-    for k,v in formatted_table.items():
-        print(k, v)
 
     write_to_worksheet(worksheet, formatted_table)
     workbook.close()
