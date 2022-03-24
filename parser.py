@@ -2,48 +2,48 @@
 from bs4 import BeautifulSoup
 import xlsxwriter
 
+def filter_down_tags(tag):
+    if tag.strong:
+        tag = tag.strong
+    if tag.span:
+        tag = tag.span
+    return tag
+
 def parse_table(soup):
-    # This function can, and will be refactered, but the inconsistent formatting of the webpage
-    # made parsing the table rather annoying. With a more consistent base html this function would be
-    # about 1/4 as long and complex
+    '''
+    Lots of inconsistencies in the html structure made this file much 
+    more complicated than it needed to be, if the original html was cleaned
+    up this function would be about half as complex
+    '''
     table = soup.find_all("table")[1]
     rows = table.find_all("tr")
     rows_dict = {}
-    for i, row in enumerate(rows):
-        if i < 14:
-            tds = row.find_all("td")
-            row_data = []
-            line_cell = tds[0]
-            if line_cell.p:
-                line_cell = line_cell.p
-            if line_cell.strong:
-                line_cell = line_cell.strong
-            if line_cell.span:
-                line_cell = line_cell.span
-            line_cell = line_cell.decode_contents()
-            line_cell = line_cell.split('<')[0].strip()
-            lines = line_cell.split('/')
-            for line in lines:
-                rows_dict[line] = row_data
-            for j in range(1, len(tds)):
-                line_cell = tds[j]
-                td_str = line_cell.string
-                if line_cell.p:
-                    p_list = []
-                    for p in line_cell.find_all("p"):
-                        if p.strong:
-                            p = p.strong
-                        if p.span:
-                            p = p.span
-                        p_list.append(p.string)
-                    td_str = ''.join(p_list)
-                if line_cell.strong:
-                    line_cell = line_cell.strong
-                if line_cell.span:
-                    line_cell = line_cell.span
-                if not td_str:
-                    td_str = line_cell.string
-                td_str = td_str.replace('\xa0', "").replace("\n", "").strip()
+    for i in range(14):
+        row = rows[i]
+        tds = row.find_all("td")
+        row_data = []
+        for j in range(len(tds)):
+            td = tds[j]
+            td_str = ''
+            if td.p:
+                p_list = []
+                for p in td.find_all("p"):
+                    p = filter_down_tags(p)
+                    p_str = p.decode_contents()
+                    p_str = p_str.split("<")[0]
+                    p_list.append(p_str)
+                td_str = ''.join(p_list)
+            td = filter_down_tags(td)
+            if td.span:
+                td = td.span
+            if not td_str:
+                td_str = td.decode_contents()
+            td_str = td_str.replace('\xa0', "").replace("\n", "").strip()
+            if j == 0:
+                lines = td_str.split('/')
+                for line in lines:
+                    rows_dict[line] = row_data
+            else:
                 row_data.append(td_str)
     return rows_dict
 
