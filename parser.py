@@ -68,7 +68,6 @@ def format_table(table_dict):
 
 def write_to_worksheet(worksheet, formatted_table):
     #TODO refactor 
-    worksheet.write("A1", "")
     table_count = 0
     for i, line in enumerate(formatted_table):
         worksheet.write(0, i + table_count * 2, f"{line} picks")
